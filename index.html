@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airport Architect's Handbook — Burak Dağdeviren</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ─────────────────────────────────────────── */
+:root {
+  --c-bg:        #0B1120;
+  --c-surface:   #151E33;
+  --c-panel:     #1C2640;
+  --c-border:    #2A3655;
+  --c-amber:     #E8A838;
+  --c-amber-dim: #7A5518;
+  --c-amber-glow: rgba(232,168,56,0.12);
+  --c-magenta:   #BD1A8D;
+  --c-magenta-dim: rgba(189,26,141,0.15);
+  --c-white:     #F0F4FF;
+  --c-muted:     #8494B2;
+  --c-faint:     #3D4F70;
+  --slide-w: 1280px;
+  --slide-h: 720px;
+  --safe: 64px;
+  --t-xs:  18px;
+  --t-sm:  24px;
+  --t-md:  32px;
+  --t-lg:  48px;
+  --t-xl:  64px;
+  --t-2xl: 80px;
+  --sp-xs:  8px;
+  --sp-sm:  16px;
+  --sp-md:  24px;
+  --sp-lg:  32px;
+  --sp-xl:  48px;
+  --sp-2xl: 64px;
+  --sp-3xl: 96px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #06090F; font-family: 'Inter', sans-serif; }
+
+/* ── DECK ──────────────────────────────────────────────────── */
+#deck {
+  display: flex; flex-direction: column;
+  align-items: center; gap: var(--sp-md);
+  padding: var(--sp-xl) var(--sp-md);
+}
+
+/* ── SLIDE BASE ────────────────────────────────────────────── */
+.slide {
+  position: relative;
+  width: var(--slide-w); height: var(--slide-h);
+  background: var(--c-bg); overflow: hidden; flex-shrink: 0;
+}
+
+/* ── PERSISTENT ELEMENTS ───────────────────────────────────── */
+.slide-num {
+  position: absolute; bottom: var(--safe); right: var(--safe);
+  font-size: 13px; color: var(--c-faint);
+  font-weight: 400; letter-spacing: 0.05em; opacity: 0.6;
+}
+.wordmark {
+  position: absolute; bottom: var(--safe); left: var(--safe);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+  color: var(--c-amber-dim); text-transform: uppercase; opacity: 0.8;
+}
+.accent-bar {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 4px; background: var(--c-amber);
+}
+.accent-bar-magenta {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 4px;
+  background: linear-gradient(90deg, var(--c-amber), var(--c-magenta));
+}
+.bg-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(42,54,85,0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42,54,85,0.28) 1px, transparent 1px);
+  background-size: 64px 64px; pointer-events: none;
+}
+.radial-glow { position: absolute; border-radius: 50%; pointer-events: none; }
+.glow-amber {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(232,168,56,0.09) 0%, transparent 70%);
+  top: -200px; right: -100px;
+}
+.glow-blue {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(100,140,255,0.05) 0%, transparent 70%);
+  bottom: -100px; left: 0;
+}
+.glow-magenta {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(189,26,141,0.07) 0%, transparent 70%);
+  bottom: -150px; right: -50px;
+}
+
+/* ── SHARED TEXT PRIMITIVES ────────────────────────────────── */
+.ch-label {
+  font-size: 13px; font-weight: 600; letter-spacing: 0.1em;
+  color: var(--c-amber); text-transform: uppercase;
+  margin-bottom: var(--sp-sm);
+}
+.rule { width: 48px; height: 2px; background: var(--c-amber); margin: var(--sp-md) 0; }
+.rule-magenta { width: 48px; height: 2px; background: var(--c-magenta); margin: var(--sp-md) 0; }
+
+/* ── HERO SLIDE ────────────────────────────────────────────── */
+.hero {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 0 var(--sp-3xl);
+}
+.hero .eyebrow {
+  font-size: var(--t-xs); font-weight: 600; letter-spacing: 0.12em;
+  color: var(--c-amber); text-transform: uppercase;
+  margin-bottom: var(--sp-sm);
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: var(--t-2xl); font-weight: 900; line-height: 1.05;
+  letter-spacing: -0.02em; color: var(--c-white);
+  max-width: 780px; margin-bottom: var(--sp-lg);
+}
+.hero h1 em { font-style: italic; color: var(--c-amber); }
+.hero .subtitle {
+  font-size: var(--t-sm); font-weight: 300; color: var(--c-muted);
+  line-height: 1.5; max-width: 580px; margin-bottom: var(--sp-xl);
+}
+.hero .meta { display: flex; gap: var(--sp-lg); align-items: center; }
+.hero .meta-item { font-size: 14px; font-weight: 500; color: var(--c-muted); letter-spacing: 0.04em; }
+.hero .meta-item span { color: var(--c-white); font-weight: 600; }
+.hero .divider-v { width: 1px; height: 28px; background: var(--c-border); }
+
+/* Hero right deco panel */
+.hero-deco {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 380px;
+  background: linear-gradient(160deg, var(--c-surface) 0%, var(--c-panel) 100%);
+  border-left: 1px solid var(--c-border);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0;
+  padding: var(--sp-xl) var(--sp-lg);
+}
+.hero-deco .stat {
+  text-align: center; padding: var(--sp-md) var(--sp-md);
+  border-bottom: 1px solid var(--c-border); width: 100%;
+}
+.hero-deco .stat:last-child { border-bottom: none; }
+.hero-deco .stat-num {
+  font-family: 'Playfair Display', serif; font-size: var(--t-lg);
+  font-weight: 700; color: var(--c-amber); line-height: 1;
+}
+.hero-deco .stat-label {
+  font-size: 12px; color: var(--c-muted); margin-top: 6px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+/* ── SECTION DIVIDER ───────────────────────────────────────── */
+.section-div {
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; text-align: center;
+}
+.section-div .section-number {
+  font-size: 130px; font-family: 'Playfair Display', serif;
+  font-weight: 900; color: var(--c-faint); line-height: 1;
+  letter-spacing: -0.04em; position: absolute;
+  top: var(--sp-xl); left: var(--safe); opacity: 0.2;
+}
+.section-div h2 {
+  font-family: 'Playfair Display', serif; font-size: var(--t-xl);
+  font-weight: 700; color: var(--c-white); letter-spacing: -0.02em;
+  line-height: 1.1; max-width: 760px; position: relative; z-index: 1;
+}
+.section-div h2 em { color: var(--c-amber); font-style: italic; }
+.section-div h2 em.mag { color: var(--c-magenta); font-style: italic; }
+.section-div .sec-sub {
+  font-size: var(--t-xs); color: var(--c-muted); margin-top: var(--sp-md);
+  font-weight: 400; position: relative; z-index: 1;
+}
+.section-div .amber-line {
+  width: 64px; height: 3px; background: var(--c-amber);
+  margin: var(--sp-md) auto 0; position: relative; z-index: 1;
+}
+
+/* ── CONTENT SLIDE ─────────────────────────────────────────── */
+.content-slide {
+  padding: var(--sp-xl) var(--sp-3xl);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.content-slide h2 {
+  font-family: 'Playfair Display', serif; font-size: var(--t-lg);
+  font-weight: 700; line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--c-white); margin-bottom: var(--sp-xs);
+}
+.content-slide p {
+  font-size: var(--t-xs); font-weight: 400; line-height: 1.6;
+  color: var(--c-muted); max-width: 720px;
+}
+.content-slide p strong { color: var(--c-white); font-weight: 600; }
+
+/* ── CARD SLIDE ────────────────────────────────────────────── */
+.card-slide {
+  padding: var(--sp-xl) var(--sp-3xl);
+  display: flex; flex-direction: column;
+}
+.card-slide .top { margin-bottom: var(--sp-lg); }
+.card-slide h2 {
+  font-family: 'Playfair Display', serif; font-size: var(--t-md);
+  font-weight: 700; color: var(--c-white); letter-spacing: -0.01em; line-height: 1.15;
+}
+.cards { display: flex; gap: var(--sp-md); flex: 1; align-items: stretch; }
+.card {
+  flex: 1; background: var(--c-panel); border: 1px solid var(--c-border);
+  border-top: 3px solid var(--c-amber);
+  padding: var(--sp-lg) var(--sp-md);
+  display: flex; flex-direction: column; gap: var(--sp-sm);
+  transition: border-color 0.2s, transform 0.2s;
+}
+.card:hover { border-color: var(--c-amber); transform: translateY(-2px); }
+.card .card-icon { font-size: 28px; line-height: 1; margin-bottom: var(--sp-xs); }
+.card h3 { font-size: var(--t-xs); font-weight: 700; color: var(--c-white); line-height: 1.2; }
+.card p { font-size: 15px; color: var(--c-muted); line-height: 1.55; flex: 1; }
+.card-magenta { border-top-color: var(--c-magenta) !important; }
+
+/* ── TWO-COL SLIDE ─────────────────────────────────────────── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; height: 100%; }
+.two-col .col-left {
+  padding: var(--sp-xl) var(--sp-2xl) var(--sp-xl) var(--sp-3xl);
+  display: flex; flex-direction: column; justify-content: center;
+  border-right: 1px solid var(--c-border);
+}
+.two-col .col-right {
+  padding: var(--sp-xl) var(--sp-2xl) var(--sp-xl) var(--sp-xl);
+  display: flex; flex-direction: column; justify-content: center;
+  background: var(--c-surface);
+}
+.two-col h2 {
+  font-family: 'Playfair Display', serif; font-size: var(--t-md);
+  font-weight: 700; color: var(--c-white); line-height: 1.15;
+  letter-spacing: -0.01em; margin-bottom: var(--sp-md);
+}
+.two-col .ch-label { margin-bottom: var(--sp-sm); }
+.two-col p { font-size: 17px; color: var(--c-muted); line-height: 1.6; }
+.two-col p strong { color: var(--c-white); font-weight: 600; }
+
+/* ── BULLET LIST ───────────────────────────────────────────── */
+.bullet-list { display: flex; flex-direction: column; gap: var(--sp-md); }
+.bullet-item { display: flex; gap: var(--sp-md); align-items: flex-start; }
+.bullet-dot {
+  width: 8px; height: 8px; background: var(--c-amber);
+  border-radius: 50%; margin-top: 8px; flex-shrink: 0;
+}
+.bullet-dot-mag {
+  width: 8px; height: 8px; background: var(--c-magenta);
+  border-radius: 50%; margin-top: 8px; flex-shrink: 0;
+}
+.bullet-text { font-size: 17px; color: var(--c-muted); line-height: 1.5; }
+.bullet-text strong { color: var(--c-white); font-weight: 600; }
+
+/* ── QUOTE SLIDE ───────────────────────────────────────────── */
+.quote-slide {
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; text-align: center; padding: 0 120px;
+}
+.quote-mark {
+  font-family: 'Playfair Display', serif; font-size: 120px;
+  color: var(--c-amber); line-height: 0.7;
+  margin-bottom: var(--sp-md); opacity: 0.55;
+}
+.quote-slide blockquote {
+  font-family: 'Playfair Display', serif; font-size: 34px;
+  font-weight: 700; font-style: italic; color: var(--c-white);
+  line-height: 1.35; max-width: 820px; letter-spacing: -0.01em;
+}
+.quote-slide .attr {
+  font-size: 15px; font-weight: 500; color: var(--c-amber);
+  margin-top: var(--sp-lg); letter-spacing: 0.06em;
+}
+
+/* ── STATS SLIDE ───────────────────────────────────────────── */
+.stats-slide {
+  padding: var(--sp-xl) var(--sp-3xl);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.stats-slide h2 {
+  font-family: 'Playfair Display', serif; font-size: var(--t-md);
+  font-weight: 700; color: var(--c-white); margin-bottom: var(--sp-xl);
+  letter-spacing: -0.01em;
+}
+.stats-row { display: flex; gap: 2px; }
+.stat-block {
+  flex: 1; background: var(--c-panel); border: 1px solid var(--c-border);
+  padding: var(--sp-lg) var(--sp-md); text-align: center;
+  display: flex; flex-direction: column; gap: var(--sp-sm);
+  transition: border-color 0.2s;
+}
+.stat-block:hover { border-color: var(--c-amber); }
+.stat-block .num {
+  font-family: 'Playfair Display', serif; font-size: var(--t-xl);
+  font-weight: 700; color: var(--c-amber); line-height: 1; letter-spacing: -0.02em;
+}
+.stat-block .lbl { font-size: 13px; color: var(--c-muted); font-weight: 500; line-height: 1.4; letter-spacing: 0.04em; }
+
+/* ── BIO SLIDE ─────────────────────────────────────────────── */
+.bio-slide { display: grid; grid-template-columns: 360px 1fr; height: 100%; }
+.bio-left {
+  background: var(--c-panel); border-right: 1px solid var(--c-border);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: var(--sp-xl) var(--sp-lg); gap: var(--sp-md);
+}
+.bio-avatar {
+  width: 110px; height: 110px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--c-amber) 0%, #7A5518 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-size: 44px;
+  font-weight: 700; color: var(--c-bg);
+  border: 3px solid var(--c-amber);
+}
+.bio-name {
+  font-family: 'Playfair Display', serif; font-size: var(--t-sm);
+  font-weight: 700; color: var(--c-white); text-align: center; line-height: 1.2;
+}
+.bio-title { font-size: 13px; color: var(--c-amber); text-align: center; font-weight: 500; letter-spacing: 0.04em; }
+.bio-awards {
+  margin-top: var(--sp-sm); display: flex; flex-direction: column; gap: 8px; width: 100%;
+}
+.bio-badge {
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: 4px; padding: 6px 10px; text-align: center;
+  font-size: 12px; color: var(--c-muted); line-height: 1.4;
+}
+.bio-badge strong { color: var(--c-amber); font-weight: 600; }
+.bio-right {
+  padding: var(--sp-xl) var(--sp-2xl) var(--sp-xl) var(--sp-xl);
+  display: flex; flex-direction: column; justify-content: center; gap: var(--sp-lg);
+}
+.bio-right h2 {
+  font-family: 'Playfair Display', serif; font-size: var(--t-md);
+  font-weight: 700; color: var(--c-white); letter-spacing: -0.01em; margin-bottom: var(--sp-xs);
+}
+.bio-right p { font-size: 17px; color: var(--c-muted); line-height: 1.6; }
+.bio-right p strong { color: var(--c-white); }
+.bio-creds {
+  display: flex; flex-direction: column; gap: var(--sp-sm);
+  border-left: 3px solid var(--c-amber); padding-left: var(--sp-md); margin-top: var(--sp-xs);
+}
+.bio-cred { font-size: 15px; color: var(--c-muted); line-height: 1.45; }
+.bio-cred strong { color: var(--c-white); font-weight: 600; }
+
+/* ── TOPIC GRID SLIDE ──────────────────────────────────────── */
+.topic-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--sp-xs) var(--sp-md);
+}
+.topic-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: var(--sp-xs) 0; border-bottom: 1px solid var(--c-border);
+}
+.topic-num {
+  font-size: 11px; font-weight: 700; color: var(--c-amber);
+  font-variant-numeric: tabular-nums; min-width: 22px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.topic-name { font-size: 13px; color: var(--c-muted); line-height: 1.3; }
+
+/* ── ARCH LAYER VISUAL ─────────────────────────────────────── */
+.arch-visual {
+  display: flex; flex-direction: column; gap: 8px; margin-top: var(--sp-md);
+}
+.arch-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--c-panel); border: 1px solid var(--c-border);
+  border-radius: 6px; padding: 12px 18px;
+  transition: border-color 0.2s;
+}
+.arch-row:hover { border-color: var(--c-amber); }
+.arch-row.highlight { border-color: var(--c-amber); background: rgba(232,168,56,0.06); }
+.arch-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+  color: var(--c-amber); text-transform: uppercase; min-width: 100px;
+  font-family: 'Inter', sans-serif;
+}
+.arch-boxes { display: flex; gap: 8px; flex-wrap: wrap; }
+.arch-box {
+  background: var(--c-bg); border: 1px solid var(--c-border);
+  border-radius: 4px; padding: 5px 12px;
+  font-size: 12px; color: var(--c-muted);
+}
+.arch-box.hi { border-color: var(--c-amber); color: var(--c-white); }
+.arch-arrow { text-align: center; font-size: 14px; color: var(--c-faint); padding: 2px 0; }
+
+/* ── CTA SLIDE ─────────────────────────────────────────────── */
+.cta-slide {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; padding: 0 var(--sp-3xl);
+}
+.cta-slide .eyebrow {
+  font-size: 13px; font-weight: 600; letter-spacing: 0.12em;
+  color: var(--c-amber); text-transform: uppercase; margin-bottom: var(--sp-md);
+}
+.cta-slide h2 {
+  font-family: 'Playfair Display', serif; font-size: var(--t-xl);
+  font-weight: 900; color: var(--c-white); line-height: 1.08;
+  letter-spacing: -0.02em; max-width: 760px; margin-bottom: var(--sp-xl);
+}
+.cta-slide h2 em { color: var(--c-amber); font-style: italic; }
+.cta-btn {
+  display: inline-block; background: var(--c-amber);
+  color: var(--c-bg); font-size: 15px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 14px 48px; margin-bottom: var(--sp-md); cursor: default;
+}
+.cta-note { font-size: 15px; color: var(--c-muted); }
+
+/* ── HIGHLIGHT BOX ─────────────────────────────────────────── */
+.highlight-box {
+  background: rgba(232,168,56,0.07); border: 1px solid rgba(232,168,56,0.25);
+  border-left: 3px solid var(--c-amber);
+  padding: var(--sp-md) var(--sp-lg); margin-top: var(--sp-lg);
+}
+.highlight-box p { font-size: 17px; color: var(--c-muted); line-height: 1.6; }
+.highlight-box p strong { color: var(--c-amber); }
+
+/* ── NAV DOTS ──────────────────────────────────────────────── */
+#nav {
+  position: fixed; top: 50%; right: 20px;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 6px; z-index: 100;
+}
+.nav-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--c-faint); cursor: pointer; transition: background 0.2s, transform 0.15s;
+}
+.nav-dot:hover { transform: scale(1.4); }
+.nav-dot.active { background: var(--c-amber); }
+
+/* ── HINT ──────────────────────────────────────────────────── */
+#hint {
+  position: fixed; bottom: 14px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px; color: rgba(255,255,255,0.2);
+  letter-spacing: 0.08em; pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1 — HERO TITLE                                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide hero" id="s1">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+  <div class="radial-glow glow-blue"></div>
+
+  <div class="eyebrow">Practitioner's Reference · 2025–2026</div>
+  <h1><em>Airport Architect's</em><br>Handbook</h1>
+  <p class="subtitle">A Practitioner's Reference for Systems Thinking in the Airport Sector</p>
+  <div class="meta">
+    <div class="meta-item">Author <span>Burak Dağdeviren</span></div>
+    <div class="divider-v"></div>
+    <div class="meta-item">Edition <span>Compiled 2025–2026</span></div>
+    <div class="divider-v"></div>
+    <div class="meta-item">Scope <span>51 Topics · 230+ Pages</span></div>
+  </div>
+
+  <div class="hero-deco">
+    <div class="stat"><div class="stat-num">51</div><div class="stat-label">In-Depth Topics</div></div>
+    <div class="stat"><div class="stat-num">150+</div><div class="stat-label">Technical Diagrams</div></div>
+    <div class="stat"><div class="stat-num">30+</div><div class="stat-label">Years of Technology Expertise</div></div>
+    <div class="stat"><div class="stat-num">v4.2</div><div class="stat-label">Current Edition</div></div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">1 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 2 — THE PROBLEM THIS BOOK SOLVES                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide content-slide" id="s2">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-blue"></div>
+
+  <div class="ch-label">The Core Problem</div>
+  <h2>Airports Are a System<br>of Systems</h2>
+  <div class="rule"></div>
+  <p>Dozens of organisations — each with its own mandate, technology portfolio, and governance structure — must collaborate in near-real time to deliver a consistent passenger experience. <strong>The architect who arrives with a conventional enterprise mental model will produce designs that are technically correct but operationally insufficient.</strong></p>
+
+  <div class="highlight-box" style="max-width:720px;">
+    <p>This handbook exists to close that gap. It translates thirty-five years of field experience into structured, applicable knowledge — from <strong>AODB event modelling</strong> to <strong>post-quantum cryptography readiness</strong>, from <strong>biometric pipeline design</strong> to <strong>tender response methodology</strong>.</p>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">2 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3 — AUTHOR BIO                                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide bio-slide" id="s3">
+  <div class="accent-bar"></div>
+
+  <div class="bio-left">
+    <div class="bio-avatar">BD</div>
+    <div class="bio-name">Burak Dağdeviren</div>
+    <div class="bio-title">Senior Solutions Architect<br>Technology Strategist</div>
+    <div class="bio-awards">
+      <div class="bio-badge"><strong>🏆</strong> Guinness World Record</div>
+      <div class="bio-badge"><strong>🥇</strong> A'Design Gold Award</div>
+      <div class="bio-badge"><strong>🎓</strong> Ravensbourne University, London</div>
+    </div>
+  </div>
+
+  <div class="bio-right">
+    <div>
+      <div class="ch-label">About the Author</div>
+      <h2>30+ Years Building<br>Mission-Critical Systems</h2>
+    </div>
+    <p>Burak Dağdeviren has designed, integrated, and delivered <strong>complex systems across global markets</strong> — from greenfield airport deployments with no prior infrastructure to large-scale transformation programmes running across live operational environments. He has worked across <strong>Europe, Central Asia, and the Middle East</strong>, representing clients at the C-suite level in executive presentations, workshops, and competitive bid processes.</p>
+    <div class="bio-creds">
+      <div class="bio-cred"><strong>Airport Deployments:</strong> Türkmenbashi International and five major government infrastructure programmes in Turkmenistan — ILS, RADAR, ATC, AFTN, baggage, and sitewide IT</div>
+      <div class="bio-cred"><strong>Specialisation:</strong> AODB, A-CDM, biometric identity, integration architecture, zero trust security, and enterprise architecture</div>
+      <div class="bio-cred"><strong>Academic:</strong> Electronic Communications Engineer · University lecturer in microwave systems, broadcast design, and C++</div>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">3 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4 — OPENING QUOTE                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide quote-slide" id="s4">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+
+  <div class="quote-mark">"</div>
+  <blockquote>Understanding this architecture is the prerequisite for designing anything within it.</blockquote>
+  <div class="attr">— Airport Architect's Handbook, Topic 1: The Airport as a System of Systems</div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">4 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5 — WHO THIS IS FOR                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide card-slide" id="s5">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+
+  <div class="top">
+    <div class="ch-label">Audience</div>
+    <h2>Written for Those Who Build, Integrate, and Govern Airport Technology</h2>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🏗️</div>
+      <h3>Solutions &amp; Enterprise Architects</h3>
+      <p>Systems thinking, integration patterns, SOA vs EDA, API strategy, and enterprise architecture modelling for airport ecosystems.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">✈️</div>
+      <h3>Airport IT &amp; Operations Leaders</h3>
+      <p>AODB design, resource management, A-CDM, cloud strategy, and operational data platforms explained from a practitioner's lens.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔒</div>
+      <h3>Security &amp; Compliance Professionals</h3>
+      <p>Zero Trust, OT security, GDPR for biometric data, post-quantum readiness, and regulatory audit frameworks grounded in standards.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>Procurement &amp; Presales Teams</h3>
+      <p>BoQ preparation, tender response methodology, SLA design, and scoring frameworks to win and govern contracts effectively.</p>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">5 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6 — BOOK STATS                                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide stats-slide" id="s6">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+
+  <h2>A Reference Built at Operational Scale</h2>
+  <div class="stats-row">
+    <div class="stat-block"><div class="num">51</div><div class="lbl">In-Depth Topics</div></div>
+    <div class="stat-block"><div class="num">150+</div><div class="lbl">Technical Diagrams &amp; Figures</div></div>
+    <div class="stat-block"><div class="num">230+</div><div class="lbl">Pages of Practitioner Content</div></div>
+    <div class="stat-block"><div class="num">30+</div><div class="lbl">Years of Technology Expertise</div></div>
+    <div class="stat-block"><div class="num">v4.2</div><div class="lbl">Current Edition</div></div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">6 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 7 — SECTION DIVIDER: CORE SYSTEMS                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide section-div" id="s7">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+  <div class="section-number">01</div>
+  <h2>Core Airport<br><em>Operating Systems</em></h2>
+  <div class="sec-sub">Topics 1–12 · The operational backbone of every major airport</div>
+  <div class="amber-line"></div>
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">7 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 8 — AODB                                              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide two-col" id="s8">
+  <div class="accent-bar"></div>
+
+  <div class="col-left">
+    <div class="bg-grid"></div>
+    <div class="ch-label">Topic 4 — Flagship Chapter</div>
+    <h2>AODB — The Central Nervous System</h2>
+    <div class="rule"></div>
+    <p>The Airport Operational Database is <strong>the authoritative system of record for all planned and actual flight movements</strong>. It is the single source of truth from which every connected system derives its operational picture.</p>
+    <br>
+    <p>Designing an AODB is a <strong>governance exercise as much as a database exercise</strong>: who owns which data, which system is authoritative, and how update authority is controlled under disruption.</p>
+  </div>
+
+  <div class="col-right">
+    <div class="ch-label">Architecture Layers</div>
+    <div class="arch-visual">
+      <div class="arch-row">
+        <div class="arch-label">Data Sources</div>
+        <div class="arch-boxes">
+          <div class="arch-box">PSS / DCS</div>
+          <div class="arch-box">ATC / ATFM</div>
+          <div class="arch-box">Ground Handlers</div>
+          <div class="arch-box">Border Control</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-row highlight">
+        <div class="arch-label">AODB Core</div>
+        <div class="arch-boxes">
+          <div class="arch-box hi">Flight State Machine</div>
+          <div class="arch-box hi">Data Authority Matrix</div>
+          <div class="arch-box hi">Active-Active HA</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-row">
+        <div class="arch-label">Consumers</div>
+        <div class="arch-boxes">
+          <div class="arch-box">FIDS</div>
+          <div class="arch-box">RMS</div>
+          <div class="arch-box">A-CDM</div>
+          <div class="arch-box">CUPPS / BRS</div>
+        </div>
+      </div>
+    </div>
+    <div class="bullet-list" style="margin-top: var(--sp-lg);">
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>Immutable event model</strong> — forward-only state transitions; corrections replay new events</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>AIDX-compliant</strong> integration backbone — vendor-agnostic, standards-based</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">8 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 9 — PASSENGER FLOW, A-CDM, BIOMETRICS                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide card-slide" id="s9">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+
+  <div class="top">
+    <div class="ch-label">Topics 2 · 9 · 10 · 11</div>
+    <h2>Passenger Flow — From Booking to Biometric Boarding</h2>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🧳</div>
+      <h3>End-to-End Journey Mapping</h3>
+      <p>Six phases from pre-travel through arrival documenting system ownership, data flows, failure modes, and biometric touchpoints at every stage.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⏱️</div>
+      <h3>A-CDM Milestone Model</h3>
+      <p>TOBT, TSAT, TTOT — sixteen milestones with stakeholder ownership. How collaborative departure management reduces ATFM delay and improves OTP.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">👤</div>
+      <h3>IATA One ID &amp; Biometrics</h3>
+      <p>Six-step biometric pipeline with manual fallback at every match step. Four-layer token vault: API gateway, matching engine, HSM-encrypted store, audit log.</p>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">9 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 10 — SECTION DIVIDER: TECHNOLOGY ARCHITECTURE         -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide section-div" id="s10">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+  <div class="section-number">02</div>
+  <h2>Technology<br><em>Architecture</em></h2>
+  <div class="sec-sub">Topics 13–18 · Integration, APIs, data, cloud, and analytics</div>
+  <div class="amber-line"></div>
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">10 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 11 — INTEGRATION ARCHITECTURE                         -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide two-col" id="s11">
+  <div class="accent-bar"></div>
+
+  <div class="col-left">
+    <div class="bg-grid"></div>
+    <div class="ch-label">Topics 13–14</div>
+    <h2>Integration Architecture &amp; API Strategy</h2>
+    <div class="rule"></div>
+    <p>The choice of integration pattern is <strong>not a technical decision — it is an organisational and operational one</strong>. SOA and EDA are not alternatives; they serve different interaction patterns and must be deployed together in every mature airport environment.</p>
+    <div class="highlight-box" style="margin-top: var(--sp-lg);">
+      <p><strong>"The integration decision you make in the baggage hall has consequences in the AOCC."</strong></p>
+    </div>
+  </div>
+
+  <div class="col-right">
+    <div class="bullet-list">
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>SOA</strong> — synchronous, explicit contracts, organisational alignment enforced at the interface</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>EDA + Kafka</strong> — decoupled, resilient, scales with operational event volume; idempotent producers, dead-letter queues</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>Event Sourcing + CQRS</strong> — immutable log with three read projections: current state, analytics, audit trail</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>Protocol taxonomy</strong> — REST / WebSocket / MQTT / gRPC matched to four latency bands for airport operations</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>Interface versioning</strong> — breaking vs. non-breaking changes, sunset windows, migration contracts</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">11 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 12 — CLOUD + DATA PLATFORMS                           -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide card-slide" id="s12">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-blue"></div>
+
+  <div class="top">
+    <div class="ch-label">Topics 15–17</div>
+    <h2>Data Governance, Cloud Strategy &amp; Operational Analytics</h2>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">☁️</div>
+      <h3>Hybrid Cloud — Per-Workload Classification</h3>
+      <p>Latency sensitivity × data sovereignty = a structured framework for where each workload runs: on-prem, private cloud, or public cloud with edge computing.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Stream Processing Architecture</h3>
+      <p>Kafka + Flink/Spark for exactly-once semantics, anomaly detection, and real-time resource alerting during disruption events — at airport operational scale.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🗄️</div>
+      <h3>Medallion Data Lake</h3>
+      <p>Bronze → Silver → Gold (Databricks naming). Data quality governance pipeline with quarantine, remediation loops, and self-service analytics for operations teams.</p>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">12 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 13 — SECTION DIVIDER: SECURITY & COMPLIANCE           -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide section-div" id="s13">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+  <div class="radial-glow glow-magenta"></div>
+  <div class="section-number">03</div>
+  <h2>Security, Privacy<br>&amp; <em>Compliance</em></h2>
+  <div class="sec-sub">Topics 18–22 · Zero Trust, OT security, GDPR, and biometric governance</div>
+  <div class="amber-line"></div>
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">13 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 14 — CYBERSECURITY + ZERO TRUST                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide two-col" id="s14">
+  <div class="accent-bar-magenta"></div>
+
+  <div class="col-left">
+    <div class="bg-grid"></div>
+    <div class="ch-label">Topics 18–22</div>
+    <h2>Zero Trust &amp; OT Cybersecurity</h2>
+    <div class="rule-magenta"></div>
+    <p>Airport cybersecurity spans IT and OT systems, shared-use infrastructure operated by multiple organisations, and safety-critical systems. <strong>Zero Trust Architecture (NIST SP 800-207) — assume breach, verify explicitly, apply least privilege — is the only model that fits this environment.</strong></p>
+  </div>
+
+  <div class="col-right">
+    <div class="bullet-list">
+      <div class="bullet-item">
+        <div class="bullet-dot-mag"></div>
+        <div class="bullet-text"><strong>Zero Trust PDP/PEP model</strong> — policy decision and enforcement points; least-privilege per request</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot-mag"></div>
+        <div class="bullet-text"><strong>Micro-segmentation</strong> — IT/OT network isolation, Purdue model enforcement at the OT boundary</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot-mag"></div>
+        <div class="bullet-text"><strong>Continuous threat detection</strong> — SIEM, SOAR, anomaly baselines on ramp &amp; terminal OT systems</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot-mag"></div>
+        <div class="bullet-text"><strong>GDPR Article 9</strong> — biometric data requires explicit consent; Art. 6 lawful bases are not interchangeable</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot-mag"></div>
+        <div class="bullet-text"><strong>Post-quantum readiness</strong> — NIST PQC standards, crypto-agility architecture, cryptographic inventory</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">14 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 15 — SECTION DIVIDER: EMERGING TECH                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide section-div" id="s15">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+  <div class="section-number">04</div>
+  <h2>Emerging Technology<br>&amp; <em>Innovation</em></h2>
+  <div class="sec-sub">Topics 23–29 · Digital twins, 5G, AI, IoT, sustainability, and ethics</div>
+  <div class="amber-line"></div>
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">15 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 16 — EMERGING TECH CARDS                              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide card-slide" id="s16">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+
+  <div class="top">
+    <div class="ch-label">Innovation Frontier</div>
+    <h2>Technologies Reshaping the Airport of Tomorrow</h2>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🏙️</div>
+      <h3>Digital Twin Technology</h3>
+      <p>Asset, process, and terminal-level twins for simulation, predictive maintenance, and real-time operations mirroring — with full IoT ingestion pipeline.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📡</div>
+      <h3>5G &amp; Private Networks</h3>
+      <p>UPF / AMF / SMF core architecture, NSSF for network slicing, neutral host models, and use-case prioritisation for ramp, terminal, and cargo.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧠</div>
+      <h3>AI: Demand &amp; Predictive</h3>
+      <p>Passenger flow forecasting, resource demand modelling, RUL for assets, condition-based monitoring — with bias and fairness governance frameworks.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌿</div>
+      <h3>Sustainability Engineering</h3>
+      <p>Green IT infrastructure, intelligent BMS integration, lifecycle design, carbon footprint reduction, and sustainability metrics embedded in system architecture.</p>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">16 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 17 — SECTION DIVIDER: DELIVERY & GOVERNANCE           -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide section-div" id="s17">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+  <div class="section-number">05</div>
+  <h2>Delivery, Governance<br>&amp; <em>Programme Management</em></h2>
+  <div class="sec-sub">Topics 30–51 · Methodology, SLAs, procurement, MSI, and presales</div>
+  <div class="amber-line"></div>
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">17 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 18 — DELIVERY CARDS                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide card-slide" id="s18">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+
+  <div class="top">
+    <div class="ch-label">Delivery &amp; Procurement Excellence</div>
+    <h2>From Architecture Blueprint to Operational Reality</h2>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">📐</div>
+      <h3>Enterprise Architecture (TOGAF / ArchiMate)</h3>
+      <p>Business, application, and technology architecture layers applied to airport ecosystems with structured modelling — and the practical limits of frameworks under programme pressure.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <h3>V-Model, Agile &amp; SAFe</h3>
+      <p>Hybrid methodology design — V-model precision for regulated components, Agile iteration for evolving requirements, SAFe at programme scale.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧩</div>
+      <h3>MSI Role &amp; Multi-Vendor Governance</h3>
+      <p>The Master System Integration role — governing multi-vendor programme integration at scale. The most demanding and least documented position in airport IT.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏆</div>
+      <h3>Tender Response &amp; Scoring</h3>
+      <p>The presales lifecycle, compliance matrix preparation, and how to structure proposals that maximise score against airport operator evaluation frameworks.</p>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">18 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 19 — FULL TOPIC MAP                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 19a — FULL TOPIC MAP (1–27)                            -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s19a" style="padding: var(--sp-xl) var(--sp-3xl);">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+
+  <div style="margin-bottom: var(--sp-md);">
+    <div class="ch-label">Complete Coverage · 1 of 2</div>
+    <div style="font-family:'Playfair Display',serif;font-size:var(--t-sm);font-weight:700;color:var(--c-white);letter-spacing:-0.01em;">51 Topics — Nothing Left Out</div>
+  </div>
+
+  <div class="topic-grid">
+    <div class="topic-item"><div class="topic-num">01</div><div class="topic-name">Airport as a System of Systems</div></div>
+    <div class="topic-item"><div class="topic-num">02</div><div class="topic-name">Passenger Journey Lifecycle</div></div>
+    <div class="topic-item"><div class="topic-num">03</div><div class="topic-name">Aviation Standards &amp; Protocols</div></div>
+    <div class="topic-item"><div class="topic-num">04</div><div class="topic-name">AODB: Airport Operational Database</div></div>
+    <div class="topic-item"><div class="topic-num">05</div><div class="topic-name">Resource Management Systems</div></div>
+    <div class="topic-item"><div class="topic-num">06</div><div class="topic-name">Check-In &amp; Departure Control (DCS)</div></div>
+    <div class="topic-item"><div class="topic-num">07</div><div class="topic-name">Baggage Handling &amp; BRS</div></div>
+    <div class="topic-item"><div class="topic-num">08</div><div class="topic-name">Flight Information Display (FIDS)</div></div>
+    <div class="topic-item"><div class="topic-num">09</div><div class="topic-name">A-CDM: Collaborative Decision Making</div></div>
+    <div class="topic-item"><div class="topic-num">10</div><div class="topic-name">Self-Service Passenger Processing</div></div>
+    <div class="topic-item"><div class="topic-num">11</div><div class="topic-name">Digital Identity &amp; Biometrics</div></div>
+    <div class="topic-item"><div class="topic-num">12</div><div class="topic-name">Ground Handling &amp; Ramp Operations</div></div>
+    <div class="topic-item"><div class="topic-num">13</div><div class="topic-name">Integration Architecture Patterns</div></div>
+    <div class="topic-item"><div class="topic-num">14</div><div class="topic-name">API Strategy &amp; Interface Design</div></div>
+    <div class="topic-item"><div class="topic-num">15</div><div class="topic-name">Data Governance &amp; MDM</div></div>
+    <div class="topic-item"><div class="topic-num">16</div><div class="topic-name">Cloud Strategy for Airports</div></div>
+    <div class="topic-item"><div class="topic-num">17</div><div class="topic-name">Operational Data Platforms &amp; Analytics</div></div>
+    <div class="topic-item"><div class="topic-num">18</div><div class="topic-name">Cybersecurity Architecture</div></div>
+    <div class="topic-item"><div class="topic-num">19</div><div class="topic-name">Aviation Safety Management (SMS)</div></div>
+    <div class="topic-item"><div class="topic-num">20</div><div class="topic-name">Security Technology Integration</div></div>
+    <div class="topic-item"><div class="topic-num">21</div><div class="topic-name">High Availability &amp; Disaster Recovery</div></div>
+    <div class="topic-item"><div class="topic-num">22</div><div class="topic-name">Data Protection &amp; GDPR Compliance</div></div>
+    <div class="topic-item"><div class="topic-num">23</div><div class="topic-name">Digital Twin Technology</div></div>
+    <div class="topic-item"><div class="topic-num">24</div><div class="topic-name">IoT &amp; Smart Sensor Networks</div></div>
+    <div class="topic-item"><div class="topic-num">25</div><div class="topic-name">5G &amp; Private Network Infrastructure</div></div>
+    <div class="topic-item"><div class="topic-num">26</div><div class="topic-name">AI: Demand Forecasting &amp; Predictive Maintenance</div></div>
+    <div class="topic-item"><div class="topic-num">27</div><div class="topic-name">Sustainability Engineering</div></div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">19 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 19b — FULL TOPIC MAP (28–51)                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide" id="s19b" style="padding: var(--sp-xl) var(--sp-3xl);">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+
+  <div style="margin-bottom: var(--sp-md);">
+    <div class="ch-label">Complete Coverage · 2 of 2</div>
+    <div style="font-family:'Playfair Display',serif;font-size:var(--t-sm);font-weight:700;color:var(--c-white);letter-spacing:-0.01em;">51 Topics — Nothing Left Out</div>
+  </div>
+
+  <div class="topic-grid">
+    <div class="topic-item"><div class="topic-num">28</div><div class="topic-name">Wayfinding &amp; Passenger Experience</div></div>
+    <div class="topic-item"><div class="topic-num">29</div><div class="topic-name">Human-Centric Automation &amp; Ethics</div></div>
+    <div class="topic-item"><div class="topic-num">30</div><div class="topic-name">Enterprise Architecture Modelling</div></div>
+    <div class="topic-item"><div class="topic-num">31</div><div class="topic-name">Systems Integration Methodologies</div></div>
+    <div class="topic-item"><div class="topic-num">32</div><div class="topic-name">SLAs &amp; Governance Frameworks</div></div>
+    <div class="topic-item"><div class="topic-num">33</div><div class="topic-name">Regulatory Audit Readiness</div></div>
+    <div class="topic-item"><div class="topic-num">34</div><div class="topic-name">Change Management in Live Airports</div></div>
+    <div class="topic-item"><div class="topic-num">35</div><div class="topic-name">Documentation &amp; Knowledge Transfer</div></div>
+    <div class="topic-item"><div class="topic-num">36</div><div class="topic-name">Digital Travel Credentials</div></div>
+    <div class="topic-item"><div class="topic-num">37</div><div class="topic-name">Robotic Process Automation</div></div>
+    <div class="topic-item"><div class="topic-num">38</div><div class="topic-name">Smart Building &amp; BMS Integration</div></div>
+    <div class="topic-item"><div class="topic-num">39</div><div class="topic-name">Operational Technology Cybersecurity</div></div>
+    <div class="topic-item"><div class="topic-num">40</div><div class="topic-name">Post-Quantum Cryptography Readiness</div></div>
+    <div class="topic-item"><div class="topic-num">41</div><div class="topic-name">Data Localisation &amp; Digital Sovereignty</div></div>
+    <div class="topic-item"><div class="topic-num">42</div><div class="topic-name">Digital PMO: Programme Management 2.0</div></div>
+    <div class="topic-item"><div class="topic-num">43</div><div class="topic-name">Data Centre Infrastructure Design</div></div>
+    <div class="topic-item"><div class="topic-num">44</div><div class="topic-name">Network Infrastructure &amp; Spine-Leaf</div></div>
+    <div class="topic-item"><div class="topic-num">45</div><div class="topic-name">Licensing, Support &amp; Maintenance</div></div>
+    <div class="topic-item"><div class="topic-num">46</div><div class="topic-name">Bill of Quantities for Vendors</div></div>
+    <div class="topic-item"><div class="topic-num">47</div><div class="topic-name">BoQ Reference Checklist</div></div>
+    <div class="topic-item"><div class="topic-num">48</div><div class="topic-name">Cloud-Ready &amp; Multi-Tenant Architecture</div></div>
+    <div class="topic-item"><div class="topic-num">49</div><div class="topic-name">Master System Integration (MSI) Role</div></div>
+    <div class="topic-item"><div class="topic-num">50</div><div class="topic-name">Presales &amp; Tender Response Methodology</div></div>
+    <div class="topic-item"><div class="topic-num">51</div><div class="topic-name">Tender Evaluation &amp; Scoring Frameworks</div></div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">20 / 23</div>
+</div>
+
+<div class="slide two-col" id="s20">
+  <div class="accent-bar"></div>
+
+  <div class="col-left">
+    <div class="bg-grid"></div>
+    <div class="ch-label">Differentiator</div>
+    <h2>Not Academic.<br>Operationally Verified.</h2>
+    <div class="rule"></div>
+    <p>Every chapter is grounded in <strong>real deployment decisions, real failure modes, and real trade-offs</strong> encountered across global airport programmes — not textbook theory reformatted as slides.</p>
+    <br>
+    <p>The patterns that recur, the traps that are consistently underestimated, and the architectural frameworks that <strong>hold up under genuine operational pressure</strong>.</p>
+  </div>
+
+  <div class="col-right">
+    <div class="bullet-list">
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>Vendor-agnostic</strong> — protocols and architecture patterns, not product brochures or marketing language</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>Standards-cited</strong> — ICAO, IATA, ACI, EUROCONTROL, NIST SP 800-207, GDPR Art. 6 &amp; 9, WCAG 2.1</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>Diagram-rich</strong> — 150+ technical figures: state machines, data authority matrices, integration topologies, biometric pipelines</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>Current</strong> — post-quantum cryptography, digital travel credentials, 5G slicing, and AI fairness governance</div>
+      </div>
+      <div class="bullet-item">
+        <div class="bullet-dot"></div>
+        <div class="bullet-text"><strong>End-to-end</strong> — from AODB design principles through to BoQ line-item specification and tender scoring strategy</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">21 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 21 — CLOSING QUOTE                                    -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide quote-slide" id="s21">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+
+  <div class="quote-mark">"</div>
+  <blockquote>The airport is a public trust. Hundreds of millions of people depend on these systems to move safely, efficiently, and with dignity through some of the world's most complex operational environments.</blockquote>
+  <div class="attr">— Burak Dağdeviren · Closing Note, Airport Architect's Handbook</div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">22 / 23</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 22 — CTA / CLOSING                                    -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide cta-slide" id="s22">
+  <div class="accent-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="radial-glow glow-amber"></div>
+  <div class="radial-glow glow-magenta"></div>
+
+  <div class="eyebrow">The Definitive Practitioner's Reference</div>
+  <h2>The <em>Airport Architect's</em><br>Handbook — Edition 2025–2026</h2>
+  <div style="font-size:18px;color:var(--c-muted);margin-bottom:var(--sp-xl);max-width:600px;line-height:1.6;text-align:center;">
+    51 topics · 150+ diagrams · 230+ pages<br>
+    Authored by Burak Dağdeviren — 30+ years of technology expertise
+  </div>
+  <div class="cta-btn">Get Your Copy</div>
+  <div class="cta-note">Available for practitioners, teams, and organisations</div>
+
+  <div class="wordmark">Airport Architect's Handbook</div>
+  <div class="slide-num">23 / 23</div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- NAV DOTS -->
+<nav id="nav">
+  <div class="nav-dot active" onclick="goToId('s1')" title="Title"></div>
+  <div class="nav-dot" onclick="goToId('s2')" title="The Problem"></div>
+  <div class="nav-dot" onclick="goToId('s3')" title="Author"></div>
+  <div class="nav-dot" onclick="goToId('s4')" title="Quote"></div>
+  <div class="nav-dot" onclick="goToId('s5')" title="Who It's For"></div>
+  <div class="nav-dot" onclick="goToId('s6')" title="Stats"></div>
+  <div class="nav-dot" onclick="goToId('s7')" title="§01 Core Systems"></div>
+  <div class="nav-dot" onclick="goToId('s8')" title="AODB"></div>
+  <div class="nav-dot" onclick="goToId('s9')" title="Passenger Flow"></div>
+  <div class="nav-dot" onclick="goToId('s10')" title="§02 Architecture"></div>
+  <div class="nav-dot" onclick="goToId('s11')" title="Integration"></div>
+  <div class="nav-dot" onclick="goToId('s12')" title="Cloud + Data"></div>
+  <div class="nav-dot" onclick="goToId('s13')" title="§03 Security"></div>
+  <div class="nav-dot" onclick="goToId('s14')" title="Cybersecurity"></div>
+  <div class="nav-dot" onclick="goToId('s15')" title="§04 Emerging Tech"></div>
+  <div class="nav-dot" onclick="goToId('s16')" title="Innovation"></div>
+  <div class="nav-dot" onclick="goToId('s17')" title="§05 Delivery"></div>
+  <div class="nav-dot" onclick="goToId('s18')" title="Delivery Cards"></div>
+  <div class="nav-dot" onclick="goToId('s19a')" title="Topics 1–27"></div>
+  <div class="nav-dot" onclick="goToId('s19b')" title="Topics 28–51"></div>
+  <div class="nav-dot" onclick="goToId('s20')" title="Differentiator"></div>
+  <div class="nav-dot" onclick="goToId('s21')" title="Closing Quote"></div>
+  <div class="nav-dot" onclick="goToId('s22')" title="CTA"></div>
+</nav>
+
+<div id="hint">↑ ↓ Arrow keys · click dots to navigate · scroll to browse</div>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const dots   = Array.from(document.querySelectorAll('.nav-dot'));
+let current  = 0;
+
+function goTo(idx) {
+  if (idx < 0 || idx >= slides.length) return;
+  current = idx;
+  slides[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+
+function goToId(id) {
+  const idx = slides.findIndex(s => s.id === id);
+  if (idx >= 0) goTo(idx);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault(); goTo(current + 1);
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault(); goTo(current - 1);
+  }
+});
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const idx = slides.indexOf(entry.target);
+      if (idx >= 0) {
+        current = idx;
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    }
+  });
+}, { threshold: 0.5 });
+
+slides.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
